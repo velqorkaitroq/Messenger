@@ -1,10 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 from uuid import uuid4
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,6 +28,10 @@ class UserResponse(BaseModel):
     id: str
     login: str
     created_at: str
+
+@app.get("/")
+def index(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @app.post("/user/register", response_model=UserResponse)
 def register(data: RegisterRequest):
